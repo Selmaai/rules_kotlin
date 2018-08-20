@@ -144,7 +144,7 @@ rm -f {resources_jar_output}
 def _maybe_make_srcsjar_action(ctx):
     if len(ctx.files.srcs) > 0:
         output_srcjar = ctx.actions.declare_file(ctx.label.name + "-sources.jar")
-        args = ["--output", output_srcjar.path]
+        args = ["-jar", str(ctx.executable._singlejar), "--output", output_srcjar.path]
         for i in ctx.files.srcs:
             args += ["--resources", i.path]
 
@@ -152,7 +152,7 @@ def _maybe_make_srcsjar_action(ctx):
             mnemonic = "KotlinPackageSources",
             inputs = ctx.files.srcs,
             outputs = [output_srcjar],
-            executable = ctx.executable._singlejar,
+            executable = ctx.executable._java,
             arguments = args,
             progress_message="Creating Kotlin srcjar from %d srcs" % len(ctx.files.srcs),
         )
@@ -162,7 +162,7 @@ def _maybe_make_srcsjar_action(ctx):
 
 # PACKAGE JARS #################################################################################################################################################
 def _fold_jars_action(ctx, output_jar, input_jars):
-    args=["--output", output_jar.path]
+    args=["-jar", ctx.executable._singlejar.path, "--output", output_jar.path]
     for i in input_jars:
         args += ["--sources", i.path]
 
@@ -170,7 +170,7 @@ def _fold_jars_action(ctx, output_jar, input_jars):
         mnemonic = "KotlinFoldOutput",
         inputs = input_jars,
         outputs = [output_jar],
-        executable = ctx.executable._singlejar,
+        executable = ctx.executable._java,
         arguments = args,
         progress_message="Merging Kotlin output jar " + output_jar.short_path
     )
