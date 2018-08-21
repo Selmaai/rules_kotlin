@@ -52,7 +52,7 @@ KOTLIN_HOME=external/com_github_jetbrains_kotlin
 function join_by { local IFS="$$1"; shift; echo "$$*"; }
 
 NAME=%s
-CP="$$(join_by : $(locations :%s))"
+CP="$$(join_by ';' $(locations :%s))"
 ARGS="%s"
 
 java -Xmx256M -Xms32M -noverify \
@@ -60,7 +60,7 @@ java -Xmx256M -Xms32M -noverify \
   -cp $${KOTLIN_HOME}/lib/kotlin-compiler.jar org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
   -cp $${CP} -d $${NAME}_temp.jar $${ARGS} $(SRCS)
 
-$(location @bazel_tools//tools/jdk:singlejar) \
+java -jar $(location @bazel_tools//tools/jdk:singlejar) \
     --normalize \
     --compression \
     --sources $${NAME}_temp.jar \
