@@ -85,6 +85,10 @@ class KotlinJvmTaskExecutor @Inject internal constructor(
         check(info.plugins.annotationProcessorsList.isNotEmpty()) { "method called without annotation processors" }
         return getCommonArgs().let { args ->
             args.addAll(pluginArgsEncoder.encode(context, this))
+            args.addAll(listOf(
+                    "-Xplugin=${compiler.toolchain.allOpenPluginJar.path}",
+                    "-P", "plugin:org.jetbrains.kotlin.allopen:annotation=ai.selma.base.Mockable"
+            ))
             args.addAll(inputs.kotlinSourcesList)
             args.addAll(inputs.javaSourcesList)
             context.executeCompilerTask(args, compiler::compile, printOnSuccess = printOnSuccess)
