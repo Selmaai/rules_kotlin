@@ -51,7 +51,7 @@ class KotlinJvmTaskExecutor @Inject internal constructor(
         )
         val taskWithAdditionalSources = context.execute("expand sources") { expandWithSourceJarSources() }
         return context.execute({
-            "kapt (${info.plugins.annotationProcessorsList.joinToString(", ") { it.processorClass }})"
+            "kapt (${inputs.processorsList.joinToString(", ")})"
         }) { taskWithAdditionalSources.runAnnotationProcessors(context) }
     }
 
@@ -82,7 +82,7 @@ class KotlinJvmTaskExecutor @Inject internal constructor(
         context: CompilationTaskContext,
         printOnSuccess: Boolean = true
     ): List<String> {
-        check(info.plugins.annotationProcessorsList.isNotEmpty()) { "method called without annotation processors" }
+        check(inputs.processorsList.isNotEmpty()) { "method called without annotation processors" }
         return getCommonArgs().let { args ->
             args.addAll(pluginArgsEncoder.encode(context, this))
             args.addAll(inputs.kotlinSourcesList)
@@ -96,15 +96,12 @@ class KotlinJvmTaskExecutor @Inject internal constructor(
      */
     private fun JvmCompilationTask.getCommonArgs(): MutableList<String> {
         val args = mutableListOf<String>()
-
-        // use -- for flags not meant for the kotlin compiler
         args.addAll(
             "-cp", inputs.joinedClasspath,
             "-api-version", info.toolchainInfo.common.apiVersion,
             "-language-version", info.toolchainInfo.common.languageVersion,
             "-jvm-target", info.toolchainInfo.jvm.jvmTarget,
-            // https://github.com/bazelbuild/rules_kotlin/issues/69: remove once jetbrains adds a flag for it.
-            "--friend-paths", info.friendPathsList.joinToString(File.pathSeparator)
+            "-Xfriend-paths=${info.friendPathsList.joinToString(File.pathSeparator)}"
         )
         
         args.addAll(listOf(
@@ -123,7 +120,7 @@ class KotlinJvmTaskExecutor @Inject internal constructor(
     private fun JvmCompilationTask.runAnnotationProcessors(
         context: CompilationTaskContext
     ): JvmCompilationTask =
-        if (info.plugins.annotationProcessorsList.isEmpty()) {
+        if (inputs.processorsList.isEmpty()) {
             this
         } else {
             runAnnotationProcessor(context, printOnSuccess = !context.isTracing).let { outputLines ->

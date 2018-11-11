@@ -46,7 +46,8 @@ In the project's `WORKSPACE`, declare the external repository and initialize the
 this:
 
 ```build
-kotlin_release_version="1.2.30"
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 rules_kotlin_version = "67f4a6050584730ebae7f8a40435a209f8e0b48e"
 
 http_archive(
@@ -57,12 +58,9 @@ http_archive(
 )
 
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories", "kt_register_toolchains")
-kotlin_repositories(kotlin_release_version=kotlin_release_version)
+kotlin_repositories()
 kt_register_toolchains()
 ```
-
-If you omit `kotlin_release_version` and just call `kotlin_repositories()` with no arguments,
-you'll get the current kotlin compiler version (at least as known to the rules_kotlin project).
 
 ## BUILD files
 
