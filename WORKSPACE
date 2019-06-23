@@ -13,12 +13,31 @@
 # limitations under the License.
 workspace(name = "io_bazel_rules_kotlin")
 
+local_repository(
+    name = "node_example",
+    path = "examples/node",
+)
+
 load("//kotlin/internal/repositories:repositories.bzl", "github_archive")
 
 github_archive(
     name = "com_google_protobuf",
-    commit = "106ffc04be1abf3ff3399f54ccf149815b287dd9",
+    commit = "09745575a923640154bcf307fba8aedff47f240a",  # v3.8.0, as of 2019-05-28
     repo = "google/protobuf",
+    sha256 = "76ee4ba47dec6146872b6cd051ae5bd12897ef0b1523d5aeb56d81a5a4ca885a",
+)
+
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+
+protobuf_deps()
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_jar")
+
+http_archive(
+    name = "bazel_skylib",
+    urls = ["https://github.com/bazelbuild/bazel-skylib/archive/0.8.0.tar.gz"],
+    strip_prefix = "bazel-skylib-0.8.0",
+    sha256 = "2ea8a5ed2b448baf4a6855d3ce049c4c452a6470b1efd1504fdb7c1c134d220a",
 )
 
 http_jar(
@@ -27,16 +46,22 @@ http_jar(
     url = "https://github.com/hsyed/bazel-deps/releases/download/v0.1.0/parseproject_deploy.jar",
 )
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "4ab012a06e80172b1d2cc68a69f12237ba2c4eb47ba34cb8099830d3b8c43dbc",
-    strip_prefix = "bazel-toolchains-646207624ed58c9dc658a135e40e578f8bbabf64",
+    sha256 = "5962fe677a43226c409316fcb321d668fc4b7fa97cb1f9ef45e7dc2676097b26",
+    strip_prefix = "bazel-toolchains-be10bee3010494721f08a0fccd7f57411a1e773e",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/646207624ed58c9dc658a135e40e578f8bbabf64.tar.gz",
-        "https://github.com/bazelbuild/bazel-toolchains/archive/646207624ed58c9dc658a135e40e578f8bbabf64.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/be10bee3010494721f08a0fccd7f57411a1e773e.tar.gz",
+        "https://github.com/bazelbuild/bazel-toolchains/archive/be10bee3010494721f08a0fccd7f57411a1e773e.tar.gz",
     ],
+)
+
+load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
+
+# Creates toolchain configuration for remote execution with BuildKite CI
+# for rbe_ubuntu1604
+rbe_autoconfig(
+    name = "buildkite_config",
 )
 
 load("//kotlin:kotlin.bzl", "kotlin_repositories", "kt_register_toolchains")

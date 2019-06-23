@@ -32,12 +32,12 @@ _BAZEL_JAVA_LAUNCHER_VERSION = "0.8.1"
 
 _KOTLIN_CURRENT_COMPILER_RELEASE = {
     "urls": [
-        "https://github.com/JetBrains/kotlin/releases/download/v1.2.70/kotlin-compiler-1.2.70.zip",
+        "https://github.com/JetBrains/kotlin/releases/download/v1.3.21/kotlin-compiler-1.3.21.zip",
     ],
-    "sha256": "a23a40a3505e78563100b9e6cfd7f535fbf6593b69a5c470800fbafbeccf8434",
+    "sha256": "dbc7fbed67e0fa9a2f2ef6efd89fc1ef8d92daa38bb23c1f23914869084deb56",
 }
 
-def github_archive(name, repo, commit, build_file_content = None):
+def github_archive(name, repo, commit, build_file_content = None, sha256 = None):
     if build_file_content:
         _http_archive(
             name = name,
@@ -45,6 +45,7 @@ def github_archive(name, repo, commit, build_file_content = None):
             url = "https://github.com/%s/archive/%s.zip" % (repo, commit),
             type = "zip",
             build_file_content = build_file_content,
+            sha256 = sha256,
         )
     else:
         _http_archive(
@@ -52,6 +53,7 @@ def github_archive(name, repo, commit, build_file_content = None):
             strip_prefix = "%s-%s" % (repo.split("/")[1], commit),
             url = "https://github.com/%s/archive/%s.zip" % (repo, commit),
             type = "zip",
+            sha256 = sha256,
         )
 
 def kotlin_repositories(compiler_release = _KOTLIN_CURRENT_COMPILER_RELEASE):
