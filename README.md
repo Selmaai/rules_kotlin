@@ -1,53 +1,45 @@
-[![Build Status](https://badge.buildkite.com/72a7641b782f6f365efb775d7efb6b6ac4ea33f7db4ae7db55.svg)](https://buildkite.com/christian-gruber-open-source-stuffs/gruber-rules-kotlin-presubmit)
+[![Build Status](https://badge.buildkite.com/a8860e94a7378491ce8f50480e3605b49eb2558cfa851bbf9b.svg)](https://buildkite.com/bazel/kotlin-postsubmit)
 
-# A fork of the legacy branch of bazelbuild/rules_kotlin
+# Bazel Kotlin Rules
 
-Current release: ***`legacy_modded-0_26_1-01`***
-Maintained branch: `legacy_continued`
+Current release: ***`TBD`***<br />
+Main branch: `master`
 
-# Announcements
-* <b>June 12, 2019.</b> Kotlin 1.3 support, and release of `legacy_modded-0_26_1-01`
-* <b>June 11, 2019.</b> Fix to kotlin worker to allow modern dagger to be used in kapt. (worker was leaking its dagger dep)
-* <b>May 17, 2019.</b> More changes from upstream (mostly fixes for bazel version bump) and releases from the fork
-* <b>April 1, 2019.</b> [Roadmap](https://github.com/bazelbuild/rules_kotlin/blob/master/ROADMAP.md) for rules_kotlin published.  The `cgruber` fork will continue until the legacy branch in the parent repo can be updated (or no one needs the fork)
-* <b>February 20, 2019.</b> [Future directions](https://github.com/bazelbuild/rules_kotlin/issues/174) of rules_kotlin.
-* <b>October 24, 2018.</b> Christian Gruber forks the main kotlin rules repository, adding in two fixes.
-* <b>August 14, 2018.</b> Js support. No documentation yet but see the nested example workspace `examples/node`.
-* <b>August 14, 2018.</b> Android support. No documentation but it's a simple integration. see 
-  `kotlin/internal/jvm/android.bzl`.
-* <b>Jun 29, 2018.</b> The commits from this date forward are compatible with bazel `>=0.14`. JDK9 host issues were 
-  fixed as well some other deprecations. I recommend skipping `0.15.0` if you   are on a Mac. 
-* <b>May 25, 2018.</b> Test "friend" support. A single friend dep can be provided to `kt_jvm_test` which allows the test
-  to access internal members of the module under test.
-* <b>February 15, 2018.</b> Toolchains for the JVM rules. Currently this allow tweaking: 
-    * The JVM target (bytecode level).
-    * API and Language levels.
-    * Coroutines, enabled by default. 
-* <b>February 9, 2018.</b> Annotation processing.
-* <b>February 5, 2018. JVM rule name change:</b> the prefix has changed from `kotlin_` to `kt_jvm_`.
+# News!
+* <b>Oct 3, 2019.</b> github.com/cgruber/rules_kotlin upstreamed into this repository. 
+* <b>Oct 2, 2019.</b> NOTE: `legacy_modded-1_0_0-01` will be the last release on this fork, prior to upstreaming to github.com/bazelbuild/rules_kotlin.  For any further releases after this one, please look at that repository.
+* <b>Oct 2, 2019.</b> Fixes to bazel 1.0.0 (as of rc4). Release `legacy_modded-1_0_0-01`
+
+For older news, please see [Changelog](CHANGELOG.md)
 
 # Overview 
 
-These rules were initially forked from [pubref/rules_kotlin](http://github.com/pubref/rules_kotlin), and then re-forked from [bazelbuild/rules_kotlin](http://github.com/bazelbuild/rules_kotlin)
+**rules_kotlin** supports the basic paradigm of `*_binary`, `*_library`, `*_test` of other bazel language
+rules. It also supports `jvm`, `android`, and `js` flavors, with the prefix `kt_jvm` and `kt_js`, and 
+`kt_android` typically applied to the rules (the exception being kt_android_test, which doesn't exist.
+Users should use an android_local_test that takes a kt_android_library as a dependency).
 
-Key changes:
+Limited "friend" support is available, in the form of tests being friends of their library for the
+system under test, allowing `internal` access to types and functions.
 
-* Replace the macros with three basic rules. `kt_jvm_binary`, `kt_jvm_library` and `kt_jvm_test`.
-* Android rules. `kt_android_library` and `kt_android_binary`
-* Friend support for tests (supports access to `internal` types and functions)
-* Use a single `deps` attribute instead of `java_dep` and `dep`.
-* Add support for the following standard java rules attributes:
+Also, jvm rules support the following standard java rules attributes:
   * `data`
   * `resource_jars`
   * `runtime_deps`
   * `resources`
   * `resources_strip_prefix`
   * `exports`
-* Persistent worker support.
-* Mixed-Mode compilation (compile Java and Kotlin in one pass).
-* Configurable Kotlinc distribtution and verison
-* Configurable Toolchain
-* Kotlin 1.3 support
+  
+Android rules also support custom_package for `R.java` generation, `manifest=`, `resource_files`, etc.
+
+Other features:
+  * Persistent worker support.
+  * Mixed-Mode compilation (compile Java and Kotlin in one pass).
+  * Configurable Kotlinc distribtution and version
+  * Configurable Toolchain
+  * Kotlin 1.3 support
+  
+Javascript is reported to work, but is not as well maintained (at present)
 
 # Quick Guide
 
@@ -58,8 +50,8 @@ this:
 ```build
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-rules_kotlin_version = "legacy-modded-0_26_1-01"
-rules_kotlin_sha = "b943379a6b48156cb542cee4502a463a6e2edeb307d1a4cabd0309ca2bf3f10f"
+rules_kotlin_version = "legacy-modded-1_0_0-01"
+rules_kotlin_sha = "b7984b28e0a1e010e225a3ecdf0f49588b7b9365640af783bd01256585cbb3ae"
 http_archive(
     name = "io_bazel_rules_kotlin",
     urls = ["https://github.com/cgruber/rules_kotlin/archive/%s.zip" % rules_kotlin_version],
@@ -131,6 +123,60 @@ KOTLINC_RELEASE = {
 
 kotlin_repositories(compiler_release = KOTLINC_RELEASE)
 ```
+
+## Third party dependencies 
+_(e.g. maven artifacts)_
+
+Third party (external) artifacts can be brought in with systems such as [rules_jvm_external](https://github.com/bazelbuild/rules_jvm_external) or [bazel_maven_repository](https://github.com/square/bazel_maven_repository) or [bazel-deps](https://github.com/johnynek/bazel-deps), but make sure the version you use doesn't naively use java_import, as this will cause bazel to make an interface-only (ijar), or ABI jar, and the native ijar tool does not know about kotlin metadata with respect to inlined functions, and will remove method bodies inappropriately.  Recent versions of [rules_jvm_external] and [bazel_maven_repository] are known to work with kotlin.
+
+
+# Bazel Kotlin Rules compatibility
+
+Which version of *rules_kotlin* can you use with which version of Bazel (best
+effort testing)?
+
+| Version | HEAD   |  |
+| ------  | ----   | ---- |
+| 0.16.0  | ![No]  |  |
+| 0.16.1  | ![No]  |  |
+| 0.17.1  | ![No]  |  |
+| 0.17.2  | ![No]  |  |
+| 0.18.0  | ![Yes] |  |
+| 0.18.1  | ![Yes] |  |
+| 0.19.0  | ![Yes] |  |
+| 0.19.1  | ![Yes] |  |
+| 0.19.2  | ![Yes] |  |
+| 0.20.0  | ![Yes] |  |
+| 0.21.0  | ![Yes] |  |
+| 0.22.0  | ![Yes] |  |
+| 0.23.0  | ![Yes] |  |
+| 0.23.1  | ![Yes] |  |
+| 0.23.2  | ![Yes] |  |
+| 0.24.0  | ![Yes] |  |
+| 0.24.1  | ![Yes] |  |
+| 0.25.0  | ![Yes] |  |
+| 0.25.1  | ![Yes] |  |
+| 0.25.2  | ![Yes] |  |
+| 0.25.3  | ![Yes] |  |
+| 0.26.0  | ![Yes] |  |
+| 0.26.1  | ![Yes] |  |
+| 0.27.0  | ![Yes] |  |
+| 0.27.1  | ![Yes] |  |
+| 0.27.2  | ![Yes] |  |
+| 0.28.0  | ![Yes] |  |
+| 0.28.1  | ![Yes] |  |
+| 0.28.1  | ![Yes] |  |
+| 0.29.0  | ![Yes] |  |
+| 0.29.1  | ![Yes] |  |
+| 1.0.0rc4  | ![Yes] |  |
+
+[Yes]: https://img.shields.io/static/v1.svg?label=&message=Yes&color=green
+[No]: https://img.shields.io/static/v1.svg?label=&message=No&color=red
+[Unknown]: https://img.shields.io/static/v1.svg?label=&message=???&color=lightgrey
+
+# History
+
+These rules were initially forked from [pubref/rules_kotlin](http://github.com/pubref/rules_kotlin), and then re-forked from [bazelbuild/rules_kotlin](http://github.com/bazelbuild/rules_kotlin). They were merged back into this repository in October, 2019.
 
 # License
 
